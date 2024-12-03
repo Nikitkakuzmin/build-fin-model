@@ -15,6 +15,8 @@
         <tr>
             <th>Название</th>
             <th>Сумма всех расходов</th>
+            <th>Сумма всех доходов</th>
+            <th>Прибыль</th>
             <th>Действия</th>
         </tr>
         </thead>
@@ -22,9 +24,12 @@
         <tr th:each="project : ${projects}">
             <td th:text="${project.name}">Project Name</td>
             <td th:text="${project.expenses}">Total Expenses</td>
+            <td th:text="${project.income}">Total Income</td>
+            <td th:text="${project.profit}">Total Profit</td>
             <td>
                 <!-- Кнопка добавления затрат для проекта -->
                 <a th:href="@{'/projects/' + ${project.id} + '/costs'}" class="btn btn-primary">Добавить расходы</a>
+                <a th:href="@{'/projects/' + ${project.id} + '/incomes'}" class="btn btn-primary">Добавить доходы</a>
             </td>
         </tr>
         </tbody>

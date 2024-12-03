@@ -28,6 +28,13 @@ public class Project {
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     private List<Cost> costs;  // Список затрат
 
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
+    private List<Income> incomes;  // Список доходов
+
+    public void addIncome(BigDecimal amount) {
+        this.income = this.income.add(amount);
+    }
+
     // Метод для добавления расходов
     public void addExpenses(BigDecimal amount) {
         this.expenses = this.expenses.add(amount);

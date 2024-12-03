@@ -42,7 +42,7 @@ public class ProjectController {
     public String addCostForm(@PathVariable Long id, Model model) {
         Project project = projectService.getProject(id);
         model.addAttribute("project", project);
-        return "add";  // Страница добавления затрат
+        return "add-cost";  // Страница добавления затрат
     }
 
     @PostMapping("/projects/{id}/costs")
@@ -54,6 +54,21 @@ public class ProjectController {
                           @RequestParam BigDecimal landPurchaseCost,
                           @RequestParam String date) {
         projectService.addCost(id, buildingCost, roadConstructionCost, taxes, otherCosts, landPurchaseCost, LocalDate.parse(date));
-        return "redirect:/";  // После добавления затрат перенаправляем на страницу проекта
+        return "redirect:/";
+    }
+
+    @GetMapping("/projects/{id}/incomes")
+    public String addIncomeForm(@PathVariable Long id, Model model) {
+        Project project = projectService.getProject(id);
+        model.addAttribute("project", project);
+        return "add-income";  // Страница добавления доходов
+    }
+
+    @PostMapping("/projects/{id}/incomes")
+    public String addIncome(@PathVariable Long id,
+                            @RequestParam BigDecimal landSaleIncome,
+                            @RequestParam String date) {
+        projectService.addIncome(id, landSaleIncome, LocalDate.parse(date));
+        return "redirect:/";
     }
 }

@@ -2,8 +2,10 @@ package kz.nik.building.service;
 
 
 import kz.nik.building.model.Cost;
+import kz.nik.building.model.Income;
 import kz.nik.building.model.Project;
 import kz.nik.building.repository.CostRepository;
+import kz.nik.building.repository.IncomeRepository;
 import kz.nik.building.repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,7 @@ import java.util.Optional;
 public class ProjectService {
     private final ProjectRepository projectRepository;
     private final CostRepository costRepository;
+    private final IncomeRepository incomeRepository;
 
     // Метод для создания проекта
     public Project createProject(String name) {
@@ -39,12 +42,8 @@ public class ProjectService {
 
     // Метод для получения конкретного проекта по id
     public Project getProject(Long id) {
-        Optional<Project> project = projectRepository.findById(id);
-        if (project.isPresent()) {
-            return project.get();
-        } else {
-            throw new RuntimeException("Project not found");
-        }
+        return projectRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
     }
 
     // Метод для добавления затрат в проект
@@ -68,6 +67,25 @@ public class ProjectService {
         // Расчет и обновление расходов проекта
         BigDecimal totalCost = buildingCost.add(roadConstructionCost).add(taxes).add(otherCosts).add(landPurchaseCost);
         project.addExpenses(totalCost);
+        project.calculateProfit();
+        projectRepository.save(project);
+    }
+
+    // Метод для добавления доходов в проект
+    public void addIncome(Long projectId, BigDecimal landSaleIncome, LocalDate date) {
+        Project project = getProject(projectId);
+
+        // Создание объекта дохода
+        Income income = Income.builder()
+                .landSaleIncome(landSaleIncome)
+                .date(date)
+                .project(project)
+                .build();
+
+        incomeRepository.save(income);
+
+        // Обновляем доход проекта и пересчитываем прибыль
+        project.addIncome(landSaleIncome);
         project.calculateProfit();
         projectRepository.save(project);
     }
