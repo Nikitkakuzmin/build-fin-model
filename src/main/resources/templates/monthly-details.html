@@ -1,48 +1,88 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>Детализация по месяцам</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0-alpha1/css/bootstrap.min.css">
+    <meta charset="UTF-8">
+    <title>Детализация по месяцам</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0-alpha1/css/bootstrap.min.css">
 </head>
 <body>
+<h1 th:text="'Проект: ' + ${project.name}"></h1>
 <div class="container mt-5">
-  <h1 th:text="'Детализация проекта: ' + ${project.name}"></h1>
+    <h1 th:text="'Детализация проекта: по датам '"></h1>
 
-  <table class="table">
-    <thead>
-    <tr>
-      <th>Дата</th>
-      <th>Строительство зданий</th>
-      <th>Строительство дорог</th>
-      <th>Налоги</th>
-      <th>Прочие затраты</th>
-      <th>Покупка участка</th>
-      <th>Продажа участка</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="transaction : ${transactions}">
-      <td th:text="${transaction.date}">Дата</td>
-      <td th:text="${transaction.buildingCost}">0.00</td>
-      <td th:text="${transaction.roadConstructionCost}">0.00</td>
-      <td th:text="${transaction.taxes}">0.00</td>
-      <td th:text="${transaction.otherCosts}">0.00</td>
-      <td th:text="${transaction.landPurchaseCost}">0.00</td>
-      <td th:text="${transaction.landSaleIncome}">0.00</td>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Дата</th>
+            <th>Строительство зданий</th>
+            <th>Строительство дорог</th>
+            <th>Налоги</th>
+            <th>Прочие затраты</th>
+            <th>Покупка участка</th>
+            <th>Продажа участка</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="transaction : ${transactions}">
+            <td th:text="${transaction.date}">Дата</td>
+            <td th:text="${transaction.buildingCost}">0.00</td>
+            <td th:text="${transaction.roadConstructionCost}">0.00</td>
+            <td th:text="${transaction.taxes}">0.00</td>
+            <td th:text="${transaction.otherCosts}">0.00</td>
+            <td th:text="${transaction.landPurchaseCost}">0.00</td>
+            <td th:text="${transaction.landSaleIncome}">0.00</td>
 
-      <!-- Поиск дохода на ту же дату -->
-      <!--<td th:text="${incomes.size() > iterStat.index && incomes.get(iterStat.index).date.equals(cost.date) ? incomes.get(iterStat.index).landSaleIncome : '0.00'}">
-        0.00
-      </td>-->
-    </tr>
+            <!-- Поиск дохода на ту же дату -->
+            <!--<td th:text="${incomes.size() > iterStat.index && incomes.get(iterStat.index).date.equals(cost.date) ? incomes.get(iterStat.index).landSaleIncome : '0.00'}">
+              0.00
+            </td>-->
+        </tr>
 
-    </tbody>
-  </table>
+        </tbody>
+    </table>
+    <div class="container mt-5">
+        <h1 th:text="'Детализация проекта: по месяцам'"></h1>
 
-  <a th:href="@{'/'}" class="btn btn-secondary">Назад</a>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Дата</th>
+                <th>Строительство зданий</th>
+                <th>Строительство дорог</th>
+                <th>Налоги</th>
+                <th>Прочие затраты</th>
+                <th>Покупка участка</th>
+                <th>Продажа участка</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="entry : ${transactionsByMonth}">
+                <td th:text="${entry.key}"></td> <!-- Год-месяц (например, 2024-12) -->
+
+                <td th:text="${entry.value['BuildingCost']}"></td>
+                <td th:text="${entry.value['RoadCost']}"></td>
+                <td th:text="${entry.value['Taxes']}"></td>
+                <td th:text="${entry.value['OtherCosts']}"></td>
+                <td th:text="${entry.value['LandPurchaseCost']}"></td>
+                <td th:text="${entry.value['LandSaleIncome']}"></td>
+
+                <!-- Поиск дохода на ту же дату -->
+                <!--<td th:text="${incomes.size() > iterStat.index && incomes.get(iterStat.index).date.equals(cost.date) ? incomes.get(iterStat.index).landSaleIncome : '0.00'}">
+                  0.00
+                </td>-->
+            </tr>
+
+            </tbody>
+        </table>
+    </div>
+    <a th:href="@{'/'}" class="btn btn-secondary">Назад</a>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0-alpha1/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
+
+
+
+

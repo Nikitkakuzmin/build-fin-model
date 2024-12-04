@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -88,6 +89,47 @@ public class ProjectService {
 
     public List<Transaction> getMonthlyTransactions(Long projectId) {
         return transactionRepository.findByProjectIdOrderByDateAsc(projectId);  // Сортировка затрат по дате
+    }
+
+    // Группировка транзакций по месяцам (по году и месяцу)
+    public Map<String, Map<String, BigDecimal>> getTransactionsByMonth(Long projectId) {
+        List<Transaction> transactions = transactionRepository.findByProjectIdOrderByDateAsc(projectId);
+
+        // Группируем транзакции по году и месяцу
+        Map<String, List<Transaction>> groupedByMonth = transactions.stream()
+                .collect(Collectors.groupingBy(
+                        transaction -> transaction.getDate().getYear() + "-" + String.format("%02d", transaction.getDate().getMonthValue())
+                ));
+
+        // Для каждого месяца вычисляем суммы по категориям
+        Map<String, Map<String, BigDecimal>> monthDetailsMap = new HashMap<>();
+        for (Map.Entry<String, List<Transaction>> entry : groupedByMonth.entrySet()) {
+            String month = entry.getKey();
+            List<Transaction> monthTransactions = entry.getValue();
+
+            Map<String, BigDecimal> categorySums = new HashMap<>();
+            categorySums.put("BuildingCost", BigDecimal.ZERO);
+            categorySums.put("RoadCost", BigDecimal.ZERO);
+            categorySums.put("Taxes", BigDecimal.ZERO);
+            categorySums.put("OtherCosts", BigDecimal.ZERO);
+            categorySums.put("LandPurchaseCost", BigDecimal.ZERO);
+            categorySums.put("LandSaleIncome", BigDecimal.ZERO);
+
+            // Суммируем по категориям
+            for (Transaction transaction : monthTransactions) {
+                categorySums.put("BuildingCost", categorySums.get("BuildingCost").add(transaction.getBuildingCost()));
+                categorySums.put("RoadCost", categorySums.get("RoadCost").add(transaction.getRoadConstructionCost()));
+                categorySums.put("Taxes", categorySums.get("Taxes").add(transaction.getTaxes()));
+                categorySums.put("OtherCosts", categorySums.get("OtherCosts").add(transaction.getOtherCosts()));
+                categorySums.put("LandPurchaseCost", categorySums.get("LandPurchaseCost").add(transaction.getLandPurchaseCost()));
+                categorySums.put("LandSaleIncome", categorySums.get("LandSaleIncome").add(transaction.getLandSaleIncome()));
+            }
+
+            // Сохраняем суммы для этого месяца
+            monthDetailsMap.put(month, categorySums);
+        }
+
+        return monthDetailsMap;
     }
 
 }
