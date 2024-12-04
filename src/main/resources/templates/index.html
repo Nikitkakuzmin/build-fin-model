@@ -23,13 +23,13 @@
         <tbody>
         <tr th:each="project : ${projects}">
             <td th:text="${project.name}">Project Name</td>
-            <td th:text="${project.expenses}">Total Expenses</td>
-            <td th:text="${project.income}">Total Income</td>
+            <td th:text="${project.totalExpenses}">Total Expenses</td>
+            <td th:text="${project.totalIncome}">Total Income</td>
             <td th:text="${project.profit}">Total Profit</td>
             <td>
                 <!-- Кнопка добавления затрат для проекта -->
-                <a th:href="@{'/projects/' + ${project.id} + '/costs'}" class="btn btn-primary">Добавить расходы</a>
-                <a th:href="@{'/projects/' + ${project.id} + '/incomes'}" class="btn btn-primary">Добавить доходы</a>
+                <a th:href="@{'/projects/' + ${project.id} + '/transactions'}" class="btn btn-primary">Добавить транзакцию</a>
+                <a th:href="@{'/projects/' + ${project.id} + '/monthly-details'}" class="btn btn-info">Просмотр по месяцам</a>
             </td>
         </tr>
         </tbody>

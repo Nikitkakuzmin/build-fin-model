@@ -1,35 +1,36 @@
 package kz.nik.building.service;
 
 
-import kz.nik.building.model.Cost;
-import kz.nik.building.model.Income;
+/*import kz.nik.building.model.Cost;
+import kz.nik.building.model.Income;*/
 import kz.nik.building.model.Project;
-import kz.nik.building.repository.CostRepository;
-import kz.nik.building.repository.IncomeRepository;
+import kz.nik.building.model.Transaction;
+/*import kz.nik.building.repository.CostRepository;
+import kz.nik.building.repository.IncomeRepository;*/
 import kz.nik.building.repository.ProjectRepository;
+import kz.nik.building.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class ProjectService {
     private final ProjectRepository projectRepository;
-    private final CostRepository costRepository;
-    private final IncomeRepository incomeRepository;
+
+    private final TransactionRepository transactionRepository;
 
     // Метод для создания проекта
     public Project createProject(String name) {
         Project project = Project.builder()
                 .name(name)
-                .income(BigDecimal.ZERO)
-                .expenses(BigDecimal.ZERO)
+                /*.transaction(BigDecimal.ZERO)*/
                 .profit(BigDecimal.ZERO)
                 .build();
         return projectRepository.save(project);
@@ -46,47 +47,47 @@ public class ProjectService {
                 .orElseThrow(() -> new RuntimeException("Project not found"));
     }
 
-    // Метод для добавления затрат в проект
-    public void addCost(Long projectId, BigDecimal buildingCost, BigDecimal roadConstructionCost, BigDecimal taxes,
-                        BigDecimal otherCosts, BigDecimal landPurchaseCost, LocalDate date) {
+    // Метод для добавления транзакции
+    public void addTransaction(Long projectId, BigDecimal buildingCost, BigDecimal roadConstructionCost, BigDecimal taxes,
+                               BigDecimal otherCosts, BigDecimal landPurchaseCost, BigDecimal landSaleIncome, LocalDate date) {
+        // Получаем проект по его ID
         Project project = getProject(projectId);
 
-        // Создание объекта затрат
-        Cost cost = Cost.builder()
+        // Создание объекта транзакции
+        Transaction transaction = Transaction.builder()
                 .buildingCost(buildingCost)
                 .roadConstructionCost(roadConstructionCost)
                 .taxes(taxes)
                 .otherCosts(otherCosts)
                 .landPurchaseCost(landPurchaseCost)
-                .date(date)
-                .project(project)
-                .build();
-
-        costRepository.save(cost);
-
-        // Расчет и обновление расходов проекта
-        BigDecimal totalCost = buildingCost.add(roadConstructionCost).add(taxes).add(otherCosts).add(landPurchaseCost);
-        project.addExpenses(totalCost);
-        project.calculateProfit();
-        projectRepository.save(project);
-    }
-
-    // Метод для добавления доходов в проект
-    public void addIncome(Long projectId, BigDecimal landSaleIncome, LocalDate date) {
-        Project project = getProject(projectId);
-
-        // Создание объекта дохода
-        Income income = Income.builder()
                 .landSaleIncome(landSaleIncome)
                 .date(date)
                 .project(project)
                 .build();
 
-        incomeRepository.save(income);
+        // Сохраняем транзакцию в базе данных
+        transactionRepository.save(transaction);
 
-        // Обновляем доход проекта и пересчитываем прибыль
-        project.addIncome(landSaleIncome);
-        project.calculateProfit();
+        // Расчет общей суммы расходов
+        BigDecimal totalCost = transaction.getTotalCost();
+
+        // Расчет дохода (доход от продажи участка)
+        BigDecimal totalIncome = transaction.getTotalIncome();
+
+        // Обновляем данные проекта (доходы и расходы)
+        project.addTransaction(totalCost, totalIncome);
+
+        // Расчет прибыли: доход от продажи участка - общие расходы
+        BigDecimal profit = totalIncome.subtract(totalCost);
+        project.setProfit(project.getProfit().add(profit)); // Прибавляем к текущей прибыли проекта
+
+        // Сохраняем обновленный проект в базе данных
         projectRepository.save(project);
     }
+
+
+    public List<Transaction> getMonthlyTransactions(Long projectId) {
+        return transactionRepository.findByProjectIdOrderByDateAsc(projectId);  // Сортировка затрат по дате
+    }
+
 }

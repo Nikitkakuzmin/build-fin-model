@@ -1,7 +1,9 @@
 package kz.nik.building.api;
 
-import kz.nik.building.model.Cost;
+/*import kz.nik.building.model.Cost;
+import kz.nik.building.model.Income;*/
 import kz.nik.building.model.Project;
+import kz.nik.building.model.Transaction;
 import kz.nik.building.service.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -38,37 +40,39 @@ public class ProjectController {
         return "redirect:/";  // После создания проекта перенаправляем на главную страницу
     }
 
-    @GetMapping("/projects/{id}/costs")
-    public String addCostForm(@PathVariable Long id, Model model) {
+    @GetMapping("/projects/{id}/transactions")
+    public String addTransactionForm(@PathVariable Long id, Model model) {
         Project project = projectService.getProject(id);
         model.addAttribute("project", project);
-        return "add-cost";  // Страница добавления затрат
+        return "add-transaction";  // Страница добавления затрат
     }
 
-    @PostMapping("/projects/{id}/costs")
-    public String addCost(@PathVariable Long id,
+    @PostMapping("/projects/{id}/transactions")
+    public String addTransaction(@PathVariable Long id,
                           @RequestParam BigDecimal buildingCost,
                           @RequestParam BigDecimal roadConstructionCost,
                           @RequestParam BigDecimal taxes,
                           @RequestParam BigDecimal otherCosts,
                           @RequestParam BigDecimal landPurchaseCost,
+                          @RequestParam BigDecimal landSaleIncome,
                           @RequestParam String date) {
-        projectService.addCost(id, buildingCost, roadConstructionCost, taxes, otherCosts, landPurchaseCost, LocalDate.parse(date));
+        projectService.addTransaction(id, buildingCost, roadConstructionCost, taxes, otherCosts, landPurchaseCost,
+                landSaleIncome,LocalDate.parse(date));
         return "redirect:/";
     }
 
-    @GetMapping("/projects/{id}/incomes")
-    public String addIncomeForm(@PathVariable Long id, Model model) {
-        Project project = projectService.getProject(id);
+     @GetMapping("/projects/{id}/monthly-details")
+    public String getMonthlyDetails(@PathVariable Long id, Model model) {
+        Project project = projectService.getProject(id); // Получаем проект
+        List<Transaction> transactions = projectService.getMonthlyTransactions(id); // Получаем затраты по месяцам
+
+
         model.addAttribute("project", project);
-        return "add-income";  // Страница добавления доходов
+        model.addAttribute("transactions", transactions);
+
+
+        return "monthly-details";  // Переход на страницу с таблицей
     }
 
-    @PostMapping("/projects/{id}/incomes")
-    public String addIncome(@PathVariable Long id,
-                            @RequestParam BigDecimal landSaleIncome,
-                            @RequestParam String date) {
-        projectService.addIncome(id, landSaleIncome, LocalDate.parse(date));
-        return "redirect:/";
-    }
+
 }
